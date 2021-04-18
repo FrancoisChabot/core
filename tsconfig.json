@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "target": "esnext",
+        "module": "esnext",
+        "declaration": true,
+        "outDir": "./lib",
+        "moduleResolution": "node",
+        "strict": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "lib": [
+            "esnext"
+        ]
+    },
+    "include": [
+        "src",
+        "tests"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
