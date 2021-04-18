@@ -1,7 +1,4 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
-name: Node.js CI
+name: CI
 
 on:
   push:
@@ -16,8 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [12.x, 14.x, 15.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -25,7 +21,19 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm lint
-    - run: npm run build --if-present
-    - run: npm test
+    - name: Cache pnpm modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-pnpm-modules
+      with:
+        path: ~/.pnpm-store
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-
+    - name: Setup PNPM
+      uses: pnpm/action-setup@v2.0.0
+      with:
+        version: 6.0.2
+        run_install: true
+    - run: pnpm run build --if-present
+    - run: pnpm test

@@ -8,6 +8,7 @@
     "unpkg": "dist/index.umd.js",
     "scripts": {
         "test": "jest --verbose",
+        "ci": "pnpm run lint", 
         "lint": "eslint --ext .ts src/",
         "licenseCheck": "license-checker",
         "build": "pnpm run build:npm && pnpm run build:umd",
