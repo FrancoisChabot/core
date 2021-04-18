@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -23,17 +22,41 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Cache pnpm modules
       uses: actions/cache@v2
-      env:
-        cache-name: cache-pnpm-modules
       with:
         path: ~/.pnpm-store
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-${{ hashFiles('**/package.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-
+        key: ${{ runner.os }}-build-${{ matrix.node-version }}-${{ hashFiles('**/package.json') }}
     - name: Setup PNPM
       uses: pnpm/action-setup@v2.0.0
       with:
         version: 6.0.2
         run_install: true
-    - run: pnpm run build --if-present
+    - run: pnpm run build
     - run: pnpm test
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 15.x
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-build-15.x-${{ hashFiles('**/package.json') }}
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2.0.0
+        with:
+          version: 6.0.2
+          run_install: true
+      - name: Publish
+        run: |
+          pnpm run build
+          pnpm run test
+          pnpm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          pnpm publish --ignore-scripts
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
